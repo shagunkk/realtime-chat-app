@@ -1,27 +1,36 @@
-const Conversation = () => {
-	return (
-		<>
-			<div className="flex gap-2 items-center hover:bg-sky-500 rounded p-2 py-1 cursor-pointer">
-				<div className="avatar online">
-					<div className="w-12 rounded-full">
-						<img
-							src="https://cdn0.iconfinder.com/data/icons/communication-line-10/24/account_profile_user_contact_person_avatar_placeholder-512.png"
-							alt="user avatar"
-						/>
-					</div>
-				</div>
+import { useSocketContext } from "../../context/SocketContext";
+import useConversation from "../../zustand/useConversation";
 
-				<div className="flex flex-col flex-1">
-					<div className="flex gap-3 justify-between">
-						<p className="font-bold text-gray-200">John Doe</p>
-						<span className="text-xl">🎃</span>
-					</div>
-				</div>
-			</div>
+const Conversation = ({ conversation, lastIdx, emoji }) => {
+  const { selectedConversation, setSelectedConversation } = useConversation();
+  const { onlineUsers } = useSocketContext();
+  const isOnline = onlineUsers.includes(conversation._id);
 
-			<div className="divider my-0 py-0 h-1" />
-		</>
-	);
+  return (
+    <>
+      <div
+        className={`flex items-center hover:bg-sky-500 rounded p-2 py-1 cursor-pointer ${
+          selectedConversation?._id === conversation._id ? "bg-sky-500" : ""
+        }`}
+        onClick={() => setSelectedConversation(conversation)}
+      >
+        <div className={`avatar ${isOnline ? "online" : ""}`}>
+          <div className="w-12 rounded-full">
+            <img src={conversation.profilePic} alt="user avatar" />
+          </div>
+        </div>
+
+        <div className="flex flex-col flex-1 ml-3"> {/* Added margin to the left of the flex container */}
+          <div className="flex gap-3 justify-between items-center"> {/* Added 'items-center' */}
+            <p className="font-medium text-gray-700">{conversation.fullName}</p>
+            <span className="text-lg">{emoji}</span>
+          </div>
+        </div>
+      </div>
+
+      {!lastIdx && <div className="h-0.5 bg-gray-300 opacity-25" />}
+    </>
+  );
 };
 
 export default Conversation;

@@ -1,42 +1,42 @@
+import path from "path";
 import express from "express";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+
 import authRoutes from "./routes/auth.routes.js";
 import messageRoutes from "./routes/message.routes.js";
 import userRoutes from "./routes/user.routes.js";
-import connectToMongoDB from "./db/connectToMongoDB.js";
-import cookieParser from "cookie-parser";
 
-const app = express();
-const PORT = process.env.port || 5000;
+import connectToMongoDB from "./db/connectToMongoDB.js";
+import { app, server } from "./socket/socket.js";
 
 dotenv.config();
 
-// parses the incoming requests with JSON payloads (from req.body)
-app.use(express.json());
+const __dirname = path.resolve();
+const PORT = process.env.PORT || 5000;
+
+app.use(express.json()); // to parse the incoming requests with JSON payloads (from req.body)
 app.use(cookieParser());
+// Define CORS options
+const corsOptions = {
+	origin: PORT,
+	withCredentials: true, // Allow cookies to be sent with the request
+};
+
+app.use(cors(corsOptions));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/users", userRoutes);
 
-// app.get("/", (req, res) => {
-// 	// our root route
-// 	res.send("Hello World!!");
-// });
+app.use(express.static(path.join(__dirname, "/frontend/dist")));
 
-// app.get("/api/auth/signup", (req, res) => {
-// 	console.log("Sign up route");
-// });
+app.get("*", (req, res) => {
+	res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
+});
 
-// app.get("/api/auth/login", (req, res) => {
-// 	console.log("Log in route");
-// });
-
-// app.get("/api/auth/logout", (req, res) => {
-// 	console.log("Log out route");
-// });
-
-app.listen(PORT, () => {
+server.listen(PORT, () => {
 	connectToMongoDB();
-	console.log(`Server running on port ${PORT}`);
+	console.log(`Server Running on port ${PORT}`);
 });
